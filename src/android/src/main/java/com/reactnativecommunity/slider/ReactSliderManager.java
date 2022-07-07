@@ -7,6 +7,9 @@
 
 package com.reactnativecommunity.slider;
 
+import android.app.UiModeManager;
+import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.PorterDuffColorFilter;
 import android.os.Build;
 import android.graphics.PorterDuff;
@@ -77,13 +80,36 @@ public class ReactSliderManager extends SimpleViewManager<ReactSlider> {
 
   private static final SeekBar.OnSeekBarChangeListener ON_CHANGE_LISTENER =
       new SeekBar.OnSeekBarChangeListener() {
+        java.util.Timer timer;
         @Override
-        public void onProgressChanged(SeekBar seekbar, int progress, boolean fromUser) {
+        public void onProgressChanged(final SeekBar seekbar, int progress, boolean fromUser) {
           ReactContext reactContext = (ReactContext) seekbar.getContext();
           reactContext.getNativeModule(UIManagerModule.class).getEventDispatcher().dispatchEvent(
               new ReactSliderEvent(
                   seekbar.getId(),
                   ((ReactSlider)seekbar).toRealProgress(progress), fromUser));
+          UiModeManager uiModeManager = (UiModeManager) reactContext.getSystemService(Context.UI_MODE_SERVICE);
+          if (uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION) {
+            if (!((ReactSlider) seekbar).isSliding()) {
+              onStartTrackingTouch(seekbar);
+            }
+            if (timer != null) {
+               timer.cancel();
+               timer = null;
+            }
+            timer = new java.util.Timer();
+            timer.schedule(
+              new java.util.TimerTask() {
+                @Override
+                public void run() {
+                  onStopTrackingTouch(seekbar);
+                  timer.cancel();
+                  timer = null;
+                }
+              },
+              1000
+            );
+          }
         }
 
         @Override
