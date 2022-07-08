@@ -89,7 +89,7 @@ public class ReactSliderManager extends SimpleViewManager<ReactSlider> {
                   seekbar.getId(),
                   ((ReactSlider)seekbar).toRealProgress(progress), fromUser));
           UiModeManager uiModeManager = (UiModeManager) reactContext.getSystemService(Context.UI_MODE_SERVICE);
-          if (uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION) {
+          if (uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION && fromUser) {
             if (!((ReactSlider) seekbar).isSliding()) {
               onStartTrackingTouch(seekbar);
             }
